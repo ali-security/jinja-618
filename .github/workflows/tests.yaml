@@ -38,6 +38,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Remove Old Tox Environment
+        run: rm -rf .tox
+
+      - name: Ensure Proper Line Endings
+        run: |
+          find . -type f -exec dos2unix {} \;
+        shell: bash
+
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
