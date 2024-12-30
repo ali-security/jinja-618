@@ -37,6 +37,17 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          clean: true
+
+      - name: Configure Git Line Endings
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          git checkout .
+
+      - name: Normalize Line Endings
+        run: find . -type f -exec dos2unix {} \;
 
       - name: Set up Python
         uses: MatteoH2O1999/setup-python@v4
@@ -49,8 +60,14 @@ jobs:
           pip install --index-url 'https://:2024-01-10T23:12:19.504680Z@time-machines-pypi.sealsecurity.io/' -U setuptools
           python -m pip install --index-url 'https://:2024-01-10T23:12:19.504680Z@time-machines-pypi.sealsecurity.io/'  -U pip
 
+      - name: Remove Old Tox Environment
+        run: rm -rf .tox
+
       - name: Install Tox
         run: pip install --index-url 'https://:2024-01-10T23:12:19.504680Z@time-machines-pypi.sealsecurity.io/' tox
+
+      - name: Debug compiler.py Content
+        run: cat .tox/${{ matrix.tox }}/lib/python*/site-packages/jinja2/compiler.py
 
       - name: Run Tox Environment
         run: tox run -e ${{ matrix.tox }}
