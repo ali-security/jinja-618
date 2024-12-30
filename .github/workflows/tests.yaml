@@ -24,48 +24,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {name: Linux, python: '3.11', os: ubuntu-22.04, tox: py311}
-          - {name: Windows, python: '3.11', os: windows-2022, tox: py311}
+          - {name: Linux, python: '3.11', os: ubuntu-latest, tox: py311}
+          - {name: Windows, python: '3.11', os: windows-latest, tox: py311}
           - {name: Mac, python: '3.11', os: macos-latest, tox: py311}
-          - {name: '3.12-dev', python: '3.12-dev', os: ubuntu-22.04, tox: py312}
-          - {name: '3.10', python: '3.10', os: ubuntu-22.04, tox: py310}
-          - {name: '3.9', python: '3.9', os: ubuntu-22.04, tox: py39}
-          - {name: '3.8', python: '3.8', os: ubuntu-22.04, tox: py38}
-          - {name: '3.7', python: '3.7', os: ubuntu-22.04, tox: py37}
-          - {name: 'PyPy', python: 'pypy-3.10', os: ubuntu-22.04, tox: pypy310}
-          - {name: Typing, python: '3.11', os: ubuntu-22.04, tox: typing}
+          - {name: '3.12-dev', python: '3.12-dev', os: ubuntu-latest, tox: py312}
+          - {name: '3.10', python: '3.10', os: ubuntu-latest, tox: py310}
+          - {name: '3.9', python: '3.9', os: ubuntu-latest, tox: py39}
+          - {name: '3.8', python: '3.8', os: ubuntu-latest, tox: py38}
+          - {name: '3.7', python: '3.7', os: ubuntu-latest, tox: py37}
+          - {name: 'PyPy', python: 'pypy-3.10', os: ubuntu-latest, tox: pypy310}
+          - {name: Typing, python: '3.11', os: ubuntu-latest, tox: typing}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Remove Old Tox Environment
-        run: rm -rf .tox
-
-      - name: Ensure Proper Line Endings
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - name: update pip
         run: |
-          find . -type f -exec dos2unix {} \;
-        shell: bash
-
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python }}
-
-      - name: Upgrade Python Tooling
-        run: |
-          pip install --index-url 'https://:2024-01-10T23:12:19.504680Z@time-machines-pypi.sealsecurity.io/' -U wheel
-          pip install --index-url 'https://:2024-01-10T23:12:19.504680Z@time-machines-pypi.sealsecurity.io/' -U setuptools
-          python -m pip install --index-url 'https://:2024-01-10T23:12:19.504680Z@time-machines-pypi.sealsecurity.io/' -U pip
-
-      - name: Install Tox
-        run: pip install --index-url 'https://:2024-01-10T23:12:19.504680Z@time-machines-pypi.sealsecurity.io/' tox
-
-      - name: Run Tox Environment
-        run: tox run -e ${{ matrix.tox }}
-
-      - name: Debug Tox Logs on Failure
-        if: failure()
-        run: |
-          echo "Dumping tox logs for debugging..."
-          cat .tox/${{ matrix.tox }}/log/*.log || true
-          ls -al .tox/${{ matrix.tox }}
+          pip install -U wheel
+          pip install -U setuptools
+          python -m pip install -U pip
+      - run: pip install tox
+      - run: tox run -e ${{ matrix.tox }}
